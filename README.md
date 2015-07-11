@@ -6,13 +6,14 @@ This repository contains a `Dockerfile` that builds an image with the
 Since this is experimental, things might not work!  If you have a problem,
 please feel free to [file an issue][4].
 
-This image is also an automated build on the Docker hub - you can fetch it
-by running: `docker pull andrewd/rust-musl`
+This image is also on the Docker hub - you can fetch it by running:
+`docker pull andrewd/rust-musl-norm`.  Currently, I'm building the image on
+my computer - I'm hoping to get an automated build working soon.
 
 ## How To Use
 
-Using cargo as normal, and pass the `--target x86_64-unknown-linux-musl` flag.
-The output will be in the `./target/x86_64-unknown-linux-musl/` directory.
+Pass the `--target x86_64-unknown-linux-musl` flag to `cargo build`.  The
+build output will be in the `./target/x86_64-unknown-linux-musl/` directory.
 
 [1]: https://github.com/rust-lang/rust
 [2]: http://www.musl-libc.org/
