@@ -1,15 +1,31 @@
-FROM andrewd/musl-cross
+FROM debian:jessie
 MAINTAINER Andrew Dunham <andrew@du.nham.ca>
 
-# Install build dependencies
+# Install build dependencies and musl
+ENV MUSL_VERSION 1.1.10
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get upgrade -yy  && \
     DEBIAN_FRONTEND=noninteractive apt-get install -yy \
-        cmake                                              \
-        make                                               \
-        python                                             \
-        subversion                                      && \
-    mkdir -p /build
+        automake                               \
+        build-essential                        \
+        cmake                                  \
+        curl                                   \
+        file                                   \
+        git                                    \
+        make                                   \
+        pkg-config                             \
+        python                                 \
+        subversion                             \
+        texinfo                                \
+        wget                                && \
+    mkdir -p /build                         && \
+    cd /build                               && \
+    curl -LO http://www.musl-libc.org/releases/musl-${MUSL_VERSION}.tar.gz && \
+    tar zxvf musl-${MUSL_VERSION}.tar.gz    && \
+    cd musl-${MUSL_VERSION}                 && \
+    ./configure                             && \
+    make -j4                                && \
+    make install
 
 RUN echo "Fetching sources"                                                                             && \
     cd /build               && svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm                  && \
@@ -31,14 +47,14 @@ RUN echo "Building libcxxabi"                                                   
     cmake -DLLVM_PATH=/build/llvm -DLIBUNWIND_ENABLE_SHARED=OFF ..                                      && \
     make                                                                                                && \
     echo "Copying to output"                                                                            && \
-    cp ./lib/libunwind.a /opt/cross/x86_64-linux-musl/x86_64-linux-musl/lib/
+    cp ./lib/libunwind.a /usr/local/musl/lib/
 
 # Build rust
-RUN echo "Building rust"                                            && \
-    git clone --depth 1 https://github.com/rust-lang/rust.git       && \
-    cd rust                                                         && \
-    ./configure                                                        \
-        --target=x86_64-unknown-linux-musl                             \
-        --musl-root=/opt/cross/x86_64-linux-musl/x86_64-linux-musl/ && \
-    make                                                            && \
+RUN echo "Building rust"                                        && \
+    git clone --depth 1 https://github.com/rust-lang/rust.git   && \
+    cd rust                                                     && \
+    ./configure                                                    \
+        --target=x86_64-unknown-linux-musl                         \
+        --musl-root=/usr/local/musl/                            && \
+    make                                                        && \
     make install
