@@ -9,6 +9,11 @@ please feel free to [file an issue][4].
 This image is also an automated build on the Docker hub - you can fetch it
 by running: `docker pull andrewd/rust-musl`
 
+## How To Use
+
+Using cargo as normal, and pass the `--target x86_64-unknown-linux-musl` flag.
+The output will be in the `./target/x86_64-unknown-linux-musl/` directory.
+
 [1]: https://github.com/rust-lang/rust
 [2]: http://www.musl-libc.org/
 [3]: https://github.com/rust-lang/rust/pull/24777

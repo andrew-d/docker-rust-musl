@@ -49,12 +49,17 @@ RUN echo "Building libcxxabi"                                                   
     echo "Copying to output"                                                                            && \
     cp ./lib/libunwind.a /usr/local/musl/lib/
 
-# Build rust
-RUN echo "Building rust"                                        && \
-    git clone --depth 1 https://github.com/rust-lang/rust.git   && \
-    cd rust                                                     && \
-    ./configure                                                    \
-        --target=x86_64-unknown-linux-musl                         \
-        --musl-root=/usr/local/musl/                            && \
-    make                                                        && \
-    make install
+# Build rust and install cargo
+RUN echo "Building rust"                                            && \
+    cd /build                                                       && \
+    git clone --depth 1 https://github.com/rust-lang/rust.git       && \
+    cd rust                                                         && \
+    ./configure                                                        \
+        --target=x86_64-unknown-linux-musl                             \
+        --musl-root=/usr/local/musl/                                && \
+    make                                                            && \
+    make install                                                    && \
+    cd /build                                                       && \
+    curl -LO https://static.rust-lang.org/cargo-dist/cargo-nightly-x86_64-unknown-linux-gnu.tar.gz && \
+    tar zxf cargo-nightly-x86_64-unknown-linux-gnu.tar.gz           && \
+    USER=root ./cargo-nightly-x86_64-unknown-linux-gnu/install.sh
