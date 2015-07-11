@@ -104,7 +104,6 @@ function cleanup() {
 function main() {
     install_dependencies
     install_musl
-    fetch_sources
     build_llvm_components
     build_rust
     install_cargo
