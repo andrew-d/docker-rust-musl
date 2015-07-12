@@ -8,7 +8,9 @@ please feel free to [file an issue][4].
 
 This image is also on the Docker hub - you can fetch it by running:
 `docker pull andrewd/rust-musl`.  Currently, I'm building the image on my
-computer - I'm hoping to get an automated build working soon.
+computer, since the automated builds on the Docker hub take more than 2 hours
+and thus time out / get killed before completion.  I'm looking at ways to fix
+this.
 
 ## How To Use
 
