@@ -15,7 +15,12 @@ computer - I'm hoping to get an automated build working soon.
 Pass the `--target x86_64-unknown-linux-musl` flag to `cargo build`.  The
 build output will be in the `./target/x86_64-unknown-linux-musl/` directory.
 
+Note: you might get errors about being unable to find the `c` library - e.g.
+if you're using the `libc` crate.  The [`rustc script`][5] in this repository
+can help solve that problem - see the comment at the top of the file.
+
 [1]: https://github.com/rust-lang/rust
 [2]: http://www.musl-libc.org/
 [3]: https://github.com/rust-lang/rust/pull/24777
 [4]: https://github.com/andrew-d/docker-rust-musl/issues/new
+[5]: https://github.com/andrew-d/docker-rust-musl/blob/master/rustc

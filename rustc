@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# This file is a giant hack in order to successfully build with the
+# musl libc. Essentially, we hijack the rust compiler in order to
+# inject the link path to the appropriate files, and pass the remaining
+# arguments through.
+#
+# Use this like so, from the root directory of the project:
+#   PATH=`pwd`/util:$PATH cargo build --target x86_64-unknown-linux-musl
+
+exec /usr/local/bin/rustc -L /usr/local/musl/lib "$@"
