@@ -33,6 +33,10 @@ function install_musl() {
     echo "** Installing musl"
     cd ${BUILD_DIR}
 
+    if [ -d "/usr/local/musl" ]; then
+        return
+    fi
+
     curl -LO http://www.musl-libc.org/releases/musl-${MUSL_VERSION}.tar.gz
     tar zxvf musl-${MUSL_VERSION}.tar.gz
     cd musl-${MUSL_VERSION}
@@ -43,6 +47,10 @@ function install_musl() {
 
 function build_llvm_components() {
     cd ${BUILD_DIR}
+
+    if [ -f "/usr/local/musl/lib/libunwind.a" ]; then
+        return
+    fi
 
     echo "** Fetching sources"
     cd ${BUILD_DIR}               && svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
@@ -76,17 +84,31 @@ function build_rust() {
     echo "** Building rust"
 
     cd ${BUILD_DIR}
-    git clone --depth 1 https://github.com/rust-lang/rust.git
-    cd rust
-    ./configure                             \
-        --target=x86_64-unknown-linux-musl  \
-        --musl-root=/usr/local/musl/
-    make
-    make install
+    if [ ! -d "${BUILD_DIR}/rust" ]; then
+        git clone --depth 1 https://github.com/rust-lang/rust.git
+        cd rust
+
+        ./configure                             \
+            --target=x86_64-unknown-linux-musl  \
+            --musl-root=/usr/local/musl/
+    else
+        cd rust
+    fi
+
+    # These environment variables are set from the Dockerfile and control what
+    # we build and whether we install the compiler.
+    make ${RUST_BUILD_TARGET}
+    if [ "x${RUST_BUILD_INSTALL}" == "xtrue" ]; then
+        make install
+    fi
 }
 
 function install_cargo() {
     echo "** Installing Cargo"
+
+    if [ -f "/usr/local/bin/cargo" ]; then
+        return
+    fi
 
     cd ${BUILD_DIR}
     curl -LO https://static.rust-lang.org/cargo-dist/cargo-nightly-x86_64-unknown-linux-gnu.tar.gz
@@ -95,10 +117,11 @@ function install_cargo() {
 }
 
 function cleanup() {
-    rm -rf ${BUILD_DIR}
-
-    apt-get clean
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    if [ "x${RUST_BUILD_CLEAN}" == "xtrue" ]; then
+        rm -rf ${BUILD_DIR}
+        apt-get clean
+        rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    fi
 }
 
 function main() {
