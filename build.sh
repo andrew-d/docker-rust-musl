@@ -8,27 +8,6 @@ set -x
 BUILD_DIR=/build
 
 
-function install_dependencies() {
-    apt-get update
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade -yy
-
-    DEBIAN_FRONTEND=noninteractive apt-get install -yy \
-        automake        \
-        build-essential \
-        cmake           \
-        curl            \
-        file            \
-        git             \
-        make            \
-        pkg-config      \
-        python          \
-        subversion      \
-        texinfo         \
-        wget
-
-    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-}
-
 function install_musl() {
     echo "** Installing musl"
     cd ${BUILD_DIR}
@@ -53,19 +32,11 @@ function build_llvm_components() {
     fi
 
     echo "** Fetching sources"
-    cd ${BUILD_DIR}               && svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
-    cd ${BUILD_DIR}/llvm/tools    && svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
-    cd ${BUILD_DIR}/llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt
-    cd ${BUILD_DIR}               && svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
-    cd ${BUILD_DIR}               && svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
-    cd ${BUILD_DIR}               && svn co http://llvm.org/svn/llvm-project/libunwind/trunk libunwind
+    curl http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz | tar xJf -
+    curl http://llvm.org/releases/${LLVM_VERSION}/libunwind-${LLVM_VERSION}.src.tar.xz | tar xJf -
 
-    echo "** Building libcxxabi"
-
-    cd ${BUILD_DIR}/libcxxabi
-    mkdir build && cd build
-    cmake -DLIBCXXABI_LIBCXX_PATH=${BUILD_DIR}/libcxx -DLLVM_PATH=${BUILD_DIR}/llvm ..
-    make
+    mv llvm-${LLVM_VERSION}.src llvm
+    mv libunwind-${LLVM_VERSION}.src libunwind
 
     echo "** Building libunwind"
 
@@ -125,7 +96,8 @@ function cleanup() {
 }
 
 function main() {
-    install_dependencies
+    mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+
     install_musl
     build_llvm_components
     build_rust
