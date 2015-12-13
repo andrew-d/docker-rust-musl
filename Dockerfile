@@ -3,7 +3,7 @@ MAINTAINER Andrew Dunham <andrew@du.nham.ca>
 
 # Set up environment
 ENV LLVM_VERSION        3.7.0
-ENV MUSL_VERSION        1.1.11
+ENV MUSL_VERSION        1.1.12
 ENV RUST_BUILD_TARGET   all
 ENV RUST_BUILD_INSTALL  true
 ENV RUST_BUILD_CLEAN    true
