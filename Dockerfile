@@ -2,17 +2,15 @@ FROM debian:jessie
 MAINTAINER Andrew Dunham <andrew@du.nham.ca>
 
 # Set up environment
-ENV LLVM_VERSION        3.7.0
-ENV MUSL_VERSION        1.1.12
-ENV RUST_BUILD_TARGET   all
-ENV RUST_BUILD_INSTALL  true
-ENV RUST_BUILD_CLEAN    true
+ENV LLVM_VERSION=3.7.0 \
+    MUSL_VERSION=1.1.12 \
+    RUST_BUILD_TARGET=all \
+    RUST_BUILD_INSTALL=true \
+    RUST_BUILD_CLEAN=true
 
-# Install dependencies (this isn't in the build script because it takes
-# forever, and running it here means it can be cached).
+ADD build.sh /build/build.sh
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade -yy && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -yy \
+    BUILD_DEPENDENCIES="\
         automake        \
         build-essential \
         cmake           \
@@ -24,7 +22,7 @@ RUN apt-get update && \
         python          \
         subversion      \
         texinfo         \
-        wget
-
-ADD build.sh /build/build.sh
-RUN /build/build.sh
+        wget" && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -yy gcc $BUILD_DEPENDENCIES && \
+    /build/build.sh && \
+    DEBIAN_FRONTEND=noninteractive apt-get remove -yy --auto-remove --purge $BUILD_DEPENDENCIES
