@@ -6,11 +6,8 @@ This repository contains a `Dockerfile` that builds an image with the
 Since this is experimental, things might not work!  If you have a problem,
 please feel free to [file an issue][4].
 
-This image is also on the Docker hub - you can fetch it by running:
-`docker pull andrewd/rust-musl`.  Currently, I'm building the image on my
-computer, since the automated builds on the Docker hub take more than 2 hours
-and thus time out / get killed before completion.  I'm looking at ways to fix
-this.
+This image is also an automated build on the Docker hub - you can fetch it by
+running: `docker pull andrewd/rust-musl`.
 
 ## How To Use
 
