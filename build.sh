@@ -55,7 +55,9 @@ function build_rust() {
 
     cd "${BUILD_DIR}"
     if [ ! -d "${BUILD_DIR}/rust" ]; then
-        git clone --depth 1 "https://github.com/rust-lang/rust.git"
+        curl "https://static.rust-lang.org/dist/rustc-${RUST_VERSION}-src.tar.gz" | tar xzf -
+        mv "rustc-${RUST_VERSION}" rust
+
         cd rust
 
         ./configure \
