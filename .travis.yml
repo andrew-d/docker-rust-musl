@@ -9,6 +9,9 @@ env:
     - secure: "jVuMP2W+ztZFJNbIm/MmltAxD8rYOIV8ylPQLvxuCGlUnxKNnbrQVb85WEOE51EVFBmEDV6zvUmry+her2NAkKQ5/+AUenTdqcsXsgZzHgZE7JVVkdELCir+TBaEtmJil3QMkpqxdfHf05621J2w/3UlaLsgC3grSV5fP7cO6vFgFwU8QjOgXWBI9ssaaDpBVYAwIY4VKyO4mvIrWSidInKvHJau1nsR2xTD7DoTB0tSTuxaVy+BeS25efRgeMwUl6HjQEO+kLlp605zEgYlY8AyUgeEgYj+yrgGNyrBlVcHH6Nvm7C2No+/wqlFs7aCjhJQRsH4cGr1dj1KGuDQPaQbskEJGUVY0IMcTG20l7czeIMb/liTmtdWHtxPJrtCroHmJAISPzBuiDBrh/bbgbB3n4NAwPqqf6UI4p8rXzSitY4vbx+RdqB1E/TM83mnokmEjKVl6XhfNky9tyQLGnKvuVL+8uLZiJwoKmp4IfxOQb/hUgPKY+bF05QhdPLPRP1Y/gMjziYVMw0we9HV+mwXj/up/DPj1VOHMZ7Eh+LAdXTdnX66mfLALaezRjs7E5tEiMDKT+qc47qiAytVn0jgvok06G77xiy6kGhUh6la9V6dPW9i97SmlqgYZfgMbRlovsNqu2M2BUWkz1GmYIzdo0VPSppbg/U5F41NFVU=" # DOCKER_PASS
     - COMMIT=${TRAVIS_COMMIT::8}
 
+script:
+  - /bin/true
+
 after_success:
   - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
   - export REPO=andrewd/rust-musl-travis
