@@ -1,0 +1,19 @@
+sudo: required
+services:
+  - docker
+
+env:
+  global:
+    - secure: "LiuFWNput6EgBemLsm2scZ7XDJz6Km8JJJ1u8NJVgYDTGS+f7D38zzGcO4hb65ffYxANlWVzhMsIZcyP72T0KL4JjRMTGMjVHEVLC1nlNxh5chAxZe3GlxuJIx/5jGAPGBK9uVzfdbdTcQoejvU7kJv+mVeWed01uGVzFuUP+h2fQkdCbWEUPBNqQoa/SCF4a9RaX04xOc5SzK7oYfar2iiVnN93+MPy510BIKvudwqtDUDBn8yNACvkM+knuSFmSGr6rakNUF3HsPDWcbR2Uui1pswKz6Kya1Goe5rrU2llTngyKxZV0dlldDuLpQZlKJ5wd1tifahPD/i7dtVpnAumhl4httbPXNMH+q3Iw9/NaIHddvziscYjQ15WaUnhA+A2bKjr7fEOv3lK2RGzyO3lCY2vOqFQkuNMQQv4f3vjsdP4Yq2fEcuxPgfZQg45QKPr9jbtenAd3pm27RkNUbzd6mUO+C/Ozxxit2Dj9vvPV7funEaKlouE4FFwe/Kk7H/gf50tx2HcZxWSKNHLG0Ae/S/zN1U6LWi3BcE40KLOB+myE4rtA8QJOZROSukyk6XsIfpf3e5+aJretyJ17WeK7la5au4YHJGJjcneAm+ey5KOp0JKaUjd/ZDjXhM84AnZrFxTr2Wg3C7vB5HZjnmdgVS+4V8uTvxpesu0FR8=" # DOCKER_EMAIL
+    - secure: "iLk2ovyOIFMQscqIVO5q65kpIQepnwGzYNahokcrz7nPwIloqVNjcO9IGSMeb/orNLvKk+7f8Vy0s8q3DyVAp2A4WbgBFyvMXyUCaf1LCAfBO9fmBNA2KPmLXKQEUdj0TBZ7qk9t5VLZxVpIc8cZyleDmG2vaxDaYfSD6TklYkmmq0Hww491UNzeQJVu3N9HhAJKv2Cc6jo3WqM9IRH4cPziaeq2yxsMKAC/uKMDZKbb6df+nFm4yjLqrItiOF6XCq/0plSOAiO/rDLJ87tWD3TVWAPSb3u2hmj3rFuiBT+EEvmwfK+UD8aYuNIy8m44AMT076v1jsuvU94XiMJ62ITjWcKaBluWiMe35NXcXlxOSzEkLXUqpc7Do5YjEG4CxUuQnM3Q390Leqqlwp75aOap2JFbUG9fu3FjNf7v+pNn3rzOrKd2TprgmB8CDR4Reh2R4Pr5XUvsyTXEn/gF3N9emDIH9eWVY+gBNQP11gtgeR35EO+P8GMdcaUF+tjl0m89UnEnq6fD+p4iRIqzx5zzXOMiR29dOcU7BM8Q2E5PVep+dgctkd4Hz3AcnodMKdFy9bRDAejm2Ioe1xv9suc+v157TAf9dF65SRuOvs8mzATUbEIRgaVgzxtiCTjx5yf6JQx/PkxWz3BrooTn3dtcQwIBwMFh/7hPBXyfhJ8=" # DOCKER_USER
+    - secure: "jVuMP2W+ztZFJNbIm/MmltAxD8rYOIV8ylPQLvxuCGlUnxKNnbrQVb85WEOE51EVFBmEDV6zvUmry+her2NAkKQ5/+AUenTdqcsXsgZzHgZE7JVVkdELCir+TBaEtmJil3QMkpqxdfHf05621J2w/3UlaLsgC3grSV5fP7cO6vFgFwU8QjOgXWBI9ssaaDpBVYAwIY4VKyO4mvIrWSidInKvHJau1nsR2xTD7DoTB0tSTuxaVy+BeS25efRgeMwUl6HjQEO+kLlp605zEgYlY8AyUgeEgYj+yrgGNyrBlVcHH6Nvm7C2No+/wqlFs7aCjhJQRsH4cGr1dj1KGuDQPaQbskEJGUVY0IMcTG20l7czeIMb/liTmtdWHtxPJrtCroHmJAISPzBuiDBrh/bbgbB3n4NAwPqqf6UI4p8rXzSitY4vbx+RdqB1E/TM83mnokmEjKVl6XhfNky9tyQLGnKvuVL+8uLZiJwoKmp4IfxOQb/hUgPKY+bF05QhdPLPRP1Y/gMjziYVMw0we9HV+mwXj/up/DPj1VOHMZ7Eh+LAdXTdnX66mfLALaezRjs7E5tEiMDKT+qc47qiAytVn0jgvok06G77xiy6kGhUh6la9V6dPW9i97SmlqgYZfgMbRlovsNqu2M2BUWkz1GmYIzdo0VPSppbg/U5F41NFVU=" # DOCKER_PASS
+    - COMMIT=${TRAVIS_COMMIT::8}
+
+after_success:
+  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+  - export REPO=andrewd/rust-musl-travis
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - docker build -f Dockerfile -t $REPO:$COMMIT .
+  - docker tag $REPO:$COMMIT $REPO:$TAG
+  - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
+  - docker push $REPO
