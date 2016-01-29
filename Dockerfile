@@ -21,6 +21,6 @@ RUN apt-get update && \
         pkg-config      \
         python          \
     " && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -yy gcc $BUILD_DEPENDENCIES && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -yy gcc ca-certificates $BUILD_DEPENDENCIES && \
     /build/build.sh && \
     DEBIAN_FRONTEND=noninteractive apt-get remove -yy --auto-remove --purge $BUILD_DEPENDENCIES
