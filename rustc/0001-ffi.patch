@@ -1,0 +1,10 @@
+--- src/librustc_llvm/lib.rs.old
++++ src/librustc_llvm/lib.rs
+@@ -565,6 +565,7 @@
+ // automatically updated whenever LLVM is updated to include an up-to-date
+ // set of the libraries we need to link to LLVM for.
+ #[link(name = "rustllvm", kind = "static")]
++#[link(name = "ffi")]
+ #[cfg(not(cargobuild))]
+ extern {}
+

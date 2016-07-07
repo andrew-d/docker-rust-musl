@@ -1,26 +1,15 @@
-FROM debian:jessie
+FROM alpine:3.4
 MAINTAINER Andrew Dunham <andrew@du.nham.ca>
 
-# Set up environment
-ENV LLVM_VERSION=3.7.0 \
-    MUSL_VERSION=1.1.12 \
-    RUST_VERSION=nightly \
-    RUST_BUILD_TARGET=all \
-    RUST_BUILD_INSTALL=true \
-    RUST_BUILD_CLEAN=true
+RUN sed -i -e 's/v3\.4/edge/g' /etc/apk/repositories && \
+    apk -U add alpine-sdk coreutils && \
+    adduser -G abuild -g "Alpine Package Builder" -s /bin/ash -D builder && \
+    echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir /packages && \
+    chown builder:abuild /packages && \
+    su -c 'abuild-keygen -a -i -n' -l builder
 
-ADD build.sh /build/build.sh
-RUN apt-get update && \
-    BUILD_DEPENDENCIES="\
-        automake        \
-        build-essential \
-        cmake           \
-        curl            \
-        file            \
-        make            \
-        pkg-config      \
-        python          \
-    " && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -yy gcc ca-certificates $BUILD_DEPENDENCIES && \
-    /build/build.sh && \
-    DEBIAN_FRONTEND=noninteractive apt-get remove -yy --auto-remove --purge $BUILD_DEPENDENCIES
+COPY rustc /tmp/rustc
+RUN cp -r /tmp/rustc /packages/ && \
+    chown -R builder:abuild /packages/rustc && \
+    su -c 'cd /packages/rustc && mkdir src && abuild -r' -l builder

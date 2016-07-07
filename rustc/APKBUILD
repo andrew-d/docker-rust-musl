@@ -1,0 +1,123 @@
+# Contributor: Andrew Dunham <andrew@du.nham.ca>
+# Maintainer: Andrew Dunham <andrew@du.nham.ca>
+pkgname=rustc
+pkgver=1.9.0
+pkgrel=0
+pkgdesc="Systems programming language focused on safety, speed and concurrency"
+url="https://www.rust-lang.org/"
+arch="all"
+license="Apache, MIT"
+depends="build-base libffi libgcc"
+makedepends="python file make llvm-dev musl-dev libunwind-dev libc6-compat llvm-libs llvm-static zlib-dev libffi-dev"
+install=""
+subpackages="$pkgname-doc"	 # Note: no -dev so we include object files/shared libs in main package
+source="https://static.rust-lang.org/dist/rustc-${pkgver}-src.tar.gz
+	glibc.tar.xz::https://www.archlinux.org/packages/core/x86_64/glibc/download/
+	0001-ffi.patch
+	0003-libpath.patch
+	0004-miniz.patch
+	0005-hoedown.patch
+	0099-glibc.patch.spec
+	"
+builddir="$srcdir"/$pkgname-$pkgver
+
+prepare() {
+	local i
+
+	cd "$builddir"
+
+	for i in $source; do
+		case $i in
+		*.patch) msg2 $i; patch -p0 -i "$srcdir"/$i || return 1;;
+		esac
+	done
+
+	# Install musl (again) to a subdirectory so we can pass this to the
+	# Rust compiler.
+	# NOTE: We can't check the return code here, since this will error when
+	# changing permissions.  We test for the required files below.
+	msg "Installing musl-dev in a subdirectory"
+	mkdir "$srcdir"/musl-root || return 1
+	apk add \
+		--no-cache \
+		--root "$srcdir"/musl-root \
+		-X http://dl-cdn.alpinelinux.org/alpine/edge/main/ \
+		--allow-untrusted \
+		--initdb \
+		musl-dev libunwind-dev
+
+	for f in /lib/ld-musl-x86_64.so.1 /usr/lib/libc.a \
+		 /usr/lib/libunwind.a /usr/include/stdlib.h ;
+	do
+		if [ ! -f "$srcdir"/musl-root"$f" ]; then
+			error "Could not find $f"
+			return 1
+		fi
+	done
+
+	# Symlink the proper binary that Rust expects
+	mkdir -p "$srcdir"/musl-root/usr/bin || return 1
+	ln -sf /usr/bin/gcc "$srcdir"/musl-root/usr/bin/musl-gcc || return 1
+
+	# Make a subdirectory for glibc
+	mkdir "$srcdir"/glibc || return 1
+	mv "$srcdir"/etc "$srcdir"/usr "$srcdir"/var "$srcdir"/glibc/ || return 1
+
+	# Patch our makefile to set the path for glibc
+	msg "Patching glibc path"
+	sed \
+		-e "s|@@GLIBC_PATH@@|\"$srcdir\"/glibc/usr/lib/ld-2.23.so|g" \
+		"$srcdir"/0099-glibc.patch.spec > "$srcdir/0099-glibc.patch" \
+		|| return 1
+	patch -p0 -i "$srcdir/0099-glibc.patch" || return 1
+}
+
+build() {
+	cd "$builddir"
+
+	./configure \
+		--target=x86_64-unknown-linux-musl \
+		--disable-docs \
+		--disable-codegen-tests \
+		--disable-jemalloc \
+		--enable-dist-host-only \
+		--enable-llvm-static-stdcpp \
+		--llvm-root=/usr \
+		--prefix=/usr \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--musl-root="$srcdir"/musl-root/usr \
+		|| return 1
+
+	# Need to run under glibc
+	env LD_LIBRARY_PATH="$srcdir"/glibc/usr/lib:/lib make || return 1
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install || return 1
+}
+
+md5sums="33bc33db8fa2e4d38d8bd4d0fc80502a  rustc-1.9.0-src.tar.gz
+b956a679b19fc3af665801c1930bb79b  glibc.tar.xz
+23ba42fb17bc712ce6b88e3eb21e08a9  0001-ffi.patch
+713808512047b7138d894aa13df622dd  0003-libpath.patch
+11b998570b715a347bf1dcae4fcf7023  0004-miniz.patch
+0747c18d4b60878381ebfd51e6d01b9d  0005-hoedown.patch
+bd1e5e468313f3d99570c7f207b2e73e  0099-glibc.patch.spec"
+sha256sums="b19b21193d7d36039debeaaa1f61cbf98787e0ce94bd85c5cbe2a59462d7cfcd  rustc-1.9.0-src.tar.gz
+b2b6ca0473d2b9f664a2d39217bd42e918bfb70ab66acf1eaebbf6566125ef0c  glibc.tar.xz
+932e75e0ffe2ab5cf6365585e8d0b7ba9378f2526446747b2ad039c87ac61f9f  0001-ffi.patch
+6fd934cc141ec05b5424d13ec857ed573b0c768b5fa8680f2941c99fd762e060  0003-libpath.patch
+682c6ff19b8bb17fe61e454bbf6d30a56e69e4e608abb51c6a355be8e5c719e0  0004-miniz.patch
+de3b289bfba85262913d21fa632dfaf44c5f37448224c84ba1850f845b2e69a1  0005-hoedown.patch
+83d2664d5ddce74ae5276e40947cf3c28cac5381d57430d2026be3d2acc96e87  0099-glibc.patch.spec"
+sha512sums="bb23d529daaea17cd6358057ad7c219b1bf2206331a9813520f9e3a519698f6d274a6c25f579dab9e8e48fe0c6e51e7eb473885cb1fb65128e715e06778b62f7  rustc-1.9.0-src.tar.gz
+c752c4228745c262dbd36e3e4e555fbae3599d2b98f096e3b8dfd6ba4680d582f32b8239b580870ae0ec0475a9c7ba1329cfc49e86e8b11700bc0f4976406edf  glibc.tar.xz
+d2ab8d44619bf9cf884805bf576b3a2b293607502f819cba34deade75c2b71a8e4c1c3b31be4688101b87ae9c0b6b06bca4da1f191277be76dfa630423688dc7  0001-ffi.patch
+faa15daa034f5c547e314029500cfde9971e7898f878700a0dd5e76df85f25c6c408cd5d0817667e0ff64052dc6320193154a903ad2f555c6a4144344b1c94be  0003-libpath.patch
+c1e3749e64fac80e2638d60abd1a20346e1e45fe7b5ae56b5726a377ef22c0d0b385588b9c728ccd88db437e48ea26ddf57e3ad8e68fed615ec3e8bc8efebee4  0004-miniz.patch
+71ad5b8c66a4bbef8ed9448b9a7ac26515682ef24b37f744e92062539339940c730f9e162d157d30a5ebee32397b085a12a79211550604057a99b40a2b019c3f  0005-hoedown.patch
+4299d990fe9bcc488727e7bc92366e0d8b8b3741991ba256d7d09dc633f1834781747fd731abb43f5b2135ce4607e39d07be1a4358188d2b0bd5be25f43292c6  0099-glibc.patch.spec"
