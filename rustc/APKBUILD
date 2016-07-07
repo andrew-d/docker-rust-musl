@@ -84,7 +84,6 @@ build() {
 		--enable-llvm-static-stdcpp \
 		--llvm-root=/usr \
 		--prefix=/usr \
-		--prefix=/usr \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--localstatedir=/var \
